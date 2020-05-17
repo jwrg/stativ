@@ -3,9 +3,6 @@
 BATTERY_PERCENTAGE=/sys/class/power_supply/BAT1/capacity
 BATTERY_ALARM=/sys/class/power_supply/BAT1/alarm
 
-BATTERY=$(cat $BATTERY_PERCENTAGE)
-DATE=$(/bin/date +"%F %R")
-
 cpu_prev_line=($(head -n1 /proc/stat))
 cpu_prev_reading="${cpu_prev_line[@]:1}"
 cpu_prev_reading=$((${cpu_prev_reading// /+}))
@@ -25,7 +22,7 @@ while true; do
   xsetroot -name "\
 | CPU: "`printf %03d $cpu_usage `"% \
 | MEM: "`printf %03d $mem_free `"% Free \
-| $DATE | $BATTERY%"
+| `/bin/date +"%F %R"` | `cat $BATTERY_PERCENTAGE`%"
   cpu_prev_line=("${cpu_line[@]}")
   cpu_prev_reading=$cpu_reading
   sleep 1
