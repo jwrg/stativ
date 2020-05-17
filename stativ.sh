@@ -25,6 +25,9 @@ while true; do
   disk_writes=$((disk_line[7] - disk_prev_line[7]))
   disk_reads=$((disk_line[3] - disk_prev_line[3]))
 
+  wireless_line=($(cat /proc/net/wireless | tail -1))
+  wireless_link=${wireless_line[3]%.*}
+
   uptime_line=($(cat /proc/uptime))
   uptime=${uptime_line[0]%.*}
   uptime_days=$((uptime / 86400))
@@ -39,6 +42,8 @@ while true; do
   status+=`printf "%4d" $disk_reads`
   status+=" Writes:"
   status+=`printf "%4d" $disk_writes`
+  status+=" | Link:"
+  status+=`printf "%4ddB" $wireless_link`
   status+=" | Up:"
   status+=`printf "%3dd %02d:%02d" $uptime_days $uptime_hours $uptime_minutes` 
   status+=" | `/bin/date +"%F %R"` | `cat $BATTERY_PERCENTAGE`%"
