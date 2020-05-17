@@ -19,7 +19,13 @@ while true; do
   cpu_idle=$((cpu_line[4] - cpu_prev_line[4]))
   cpu_used=$((cpu_delta - cpu_idle))
   cpu_usage=$((100 * cpu_used / cpu_delta)) 
-  xsetroot -name "CPU: "`printf %03d $cpu_usage `"% | $DATE | $BATTERY%"
+
+  mem_line=($(free | head -2 | tail -1))
+  mem_free=$((100 * mem_line[3] / mem_line[1]))
+  xsetroot -name "\
+| CPU: "`printf %03d $cpu_usage `"% \
+| MEM: "`printf %03d $mem_free `"% Free \
+| $DATE | $BATTERY%"
   cpu_prev_line=("${cpu_line[@]}")
   cpu_prev_reading=$cpu_reading
   sleep 1
