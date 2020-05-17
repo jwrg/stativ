@@ -6,6 +6,7 @@ BATTERY_ALARM=/sys/class/power_supply/BAT1/alarm
 cpu_prev_line=($(head -n1 /proc/stat))
 cpu_prev_reading="${cpu_prev_line[@]:1}"
 cpu_prev_reading=$((${cpu_prev_reading// /+}))
+disk_prev_line=($(cat /proc/diskstats | tail -9 | head -1))
 sleep 1
 
 while true; do
@@ -20,6 +21,10 @@ while true; do
   mem_line=($(free | head -2 | tail -1))
   mem_free=$((100 * mem_line[3] / mem_line[1]))
 
+  disk_line=($(cat /proc/diskstats | tail -9 | head -1))
+  disk_writes=$((disk_line[7] - disk_prev_line[7]))
+  disk_reads=$((disk_line[3] - disk_prev_line[3]))
+
   uptime_line=($(cat /proc/uptime))
   uptime=${uptime_line[0]%.*}
   uptime_days=$((uptime / 86400))
@@ -30,7 +35,11 @@ while true; do
   status+=`printf "%3d" $cpu_usage `
   status+="% | Mem:"
   status+=`printf "%3d" $mem_free `
-  status+="% Free | Up:"
+  status+="% Free | Reads:"
+  status+=`printf "%4d" $disk_reads`
+  status+=" Writes:"
+  status+=`printf "%4d" $disk_writes`
+  status+=" | Up:"
   status+=`printf "%3dd %02d:%02d" $uptime_days $uptime_hours $uptime_minutes` 
   status+=" | `/bin/date +"%F %R"` | `cat $BATTERY_PERCENTAGE`%"
 
@@ -38,6 +47,7 @@ while true; do
 
   cpu_prev_line=("${cpu_line[@]}")
   cpu_prev_reading=$cpu_reading
+  disk_prev_line=("${disk_line[@]}")
 
   sleep 1
 done
