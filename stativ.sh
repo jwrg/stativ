@@ -19,11 +19,17 @@ while true; do
 
   mem_line=($(free | head -2 | tail -1))
   mem_free=$((100 * mem_line[3] / mem_line[1]))
-  xsetroot -name "\
-| CPU: "`printf %03d $cpu_usage `"% \
-| MEM: "`printf %03d $mem_free `"% Free \
-| `/bin/date +"%F %R"` | `cat $BATTERY_PERCENTAGE`%"
+
+  status=" CPU: "
+  status+=`printf "%3d" $cpu_usage `
+  status+="% | MEM: "
+  status+=`printf "%3d" $mem_free `
+  status+="% Free | `/bin/date +"%F %R"` | `cat $BATTERY_PERCENTAGE`%"
+
+  xsetroot -name "${status}"
+
   cpu_prev_line=("${cpu_line[@]}")
   cpu_prev_reading=$cpu_reading
+
   sleep 1
 done
