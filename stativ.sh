@@ -20,11 +20,19 @@ while true; do
   mem_line=($(free | head -2 | tail -1))
   mem_free=$((100 * mem_line[3] / mem_line[1]))
 
-  status=" CPU: "
+  uptime_line=($(cat /proc/uptime))
+  uptime=${uptime_line[0]%.*}
+  uptime_days=$((uptime / 86400))
+  uptime_hours=$(((uptime - (uptime_days * 86400)) / 3600))
+  uptime_minutes=$(((uptime - (uptime_days * 86400) - (uptime_hours * 3600) ) / 60))
+
+  status=" CPU:"
   status+=`printf "%3d" $cpu_usage `
-  status+="% | MEM: "
+  status+="% | Mem:"
   status+=`printf "%3d" $mem_free `
-  status+="% Free | `/bin/date +"%F %R"` | `cat $BATTERY_PERCENTAGE`%"
+  status+="% Free | Up:"
+  status+=`printf "%3dd %02d:%02d" $uptime_days $uptime_hours $uptime_minutes` 
+  status+=" | `/bin/date +"%F %R"` | `cat $BATTERY_PERCENTAGE`%"
 
   xsetroot -name "${status}"
 
