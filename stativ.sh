@@ -15,8 +15,10 @@ cpu_3_prev_reading=$((${cpu_3_prev_reading// /+}))
 disk_prev_line=($(cat /proc/diskstats | tail -9 | head -1))
 sleep 1
 
+count=0
 while true; do
   cpu_line=($(head -n5 /proc/stat | tail -4))
+
   cpu_0_reading="${cpu_line[@]:1:10}"
   cpu_0_reading=$((${cpu_0_reading// /+}))
   cpu_0_delta=$((cpu_0_reading - cpu_0_prev_reading))
@@ -45,21 +47,28 @@ while true; do
   cpu_3_used=$((cpu_3_delta - cpu_3_idle))
   cpu_3_usage=$((100 * cpu_3_used / cpu_3_delta)) 
 
-  mem_line=($(free | head -2 | tail -1))
-  mem_free=$((100 * mem_line[3] / mem_line[1]))
+  if ! (( count % 30 )); then
+    mem_line=($(free | head -2 | tail -1))
+    mem_free=$((100 * mem_line[3] / mem_line[1]))
+  fi
 
   disk_line=($(cat /proc/diskstats | tail -9 | head -1))
   disk_writes=$((disk_line[7] - disk_prev_line[7]))
   disk_reads=$((disk_line[3] - disk_prev_line[3]))
 
-  wireless_line=($(cat /proc/net/wireless | tail -1))
-  wireless_link=${wireless_line[3]%.*}
+  if ! (( count % 5 )); then
+    wireless_line=($(cat /proc/net/wireless | tail -1))
+    wireless_link=${wireless_line[3]%.*}
+  fi
 
-  uptime_line=($(cat /proc/uptime))
-  uptime=${uptime_line[0]%.*}
-  uptime_days=$((uptime / 86400))
-  uptime_hours=$(((uptime - (uptime_days * 86400)) / 3600))
-  uptime_minutes=$(((uptime - (uptime_days * 86400) - (uptime_hours * 3600) ) / 60))
+  if ! (( count % 60 )); then
+    uptime_line=($(cat /proc/uptime))
+    uptime=${uptime_line[0]%.*}
+    uptime_days=$((uptime / 86400))
+    uptime_hours=$(((uptime - (uptime_days * 86400)) / 3600))
+    uptime_minutes=$(((uptime - (uptime_days * 86400) - (uptime_hours * 3600) ) / 60))
+    datetime=`/bin/date +"%F %R"`
+  fi
 
   status=""
   status+=`printf "%2d" $cpu_0_usage `
@@ -79,7 +88,7 @@ while true; do
   status+=`printf "%4ddB" $wireless_link`
   status+=" | Up:"
   status+=`printf "%2dd %02d:%02d" $uptime_days $uptime_hours $uptime_minutes` 
-  status+=" | `/bin/date +"%F %R"` | `cat $BATTERY_PERCENTAGE`%"
+  status+=" | $datetime | `cat $BATTERY_PERCENTAGE`%"
 
   xsetroot -name "${status}"
 
@@ -90,5 +99,6 @@ while true; do
   cpu_3_prev_reading=$cpu_3_reading
   disk_prev_line=("${disk_line[@]}")
 
+  (( count = count + 1 ))
   sleep 1
 done
