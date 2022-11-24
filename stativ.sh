@@ -4,13 +4,13 @@ BATTERY_PERCENTAGE=/sys/class/power_supply/BAT1/capacity
 BATTERY_ALARM=/sys/class/power_supply/BAT1/alarm
 
 cpu_prev_line=($(head -n5 /proc/stat | tail -4))
-cpu_0_prev_reading="${cpu_prev_line[@]:1:10}"
+cpu_0_prev_reading="${cpu_prev_line[*]:1:10}"
 cpu_0_prev_reading=$((${cpu_0_prev_reading// /+}))
-cpu_1_prev_reading="${cpu_1_prev_line[@]:12:10}"
+cpu_1_prev_reading="${cpu_prev_line[*]:12:10}"
 cpu_1_prev_reading=$((${cpu_1_prev_reading// /+}))
-cpu_2_prev_reading="${cpu_2_prev_line[@]:23:10}"
+cpu_2_prev_reading="${cpu_prev_line[*]:23:10}"
 cpu_2_prev_reading=$((${cpu_2_prev_reading// /+}))
-cpu_3_prev_reading="${cpu_3_prev_line[@]:34:10}"
+cpu_3_prev_reading="${cpu_prev_line[*]:34:10}"
 cpu_3_prev_reading=$((${cpu_3_prev_reading// /+}))
 disk_prev_line=($(cat /proc/diskstats | tail -9 | head -1))
 sleep 1
